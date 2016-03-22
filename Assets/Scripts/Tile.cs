@@ -5,61 +5,57 @@ using UnityEngine.UI;
 public class Tile : MonoBehaviour {
 
     private Transform TileText;
-    private Transform TileImage;
 
     void Awake ()
     {
         TileText = transform.Find("ValueText");
-        TileImage = transform.Find("BackImage");
     }
 
-    void ApplyStyleFromHolder (int index)
+    void ApplyStyleFromHolder (int style_index, Vector2 tile_size_delta)
     {
-        TileText.GetComponent<Text>().text = TileStyleHolder.Instance.TileStyles[index].number.ToString();
-        TileText.GetComponent<Text>().color = TileStyleHolder.Instance.TileStyles[index].TextColor;
-        TileImage.GetComponent<Image>().color = TileStyleHolder.Instance.TileStyles[index].TileColor;
-        TileText.gameObject.SetActive(true);
-        TileImage.gameObject.SetActive(true);
+        transform.GetComponent<Image>().color = TileStyleHolder.Instance.TileStyles[style_index].TileColor;
+        transform.GetComponent<RectTransform>().sizeDelta = tile_size_delta;
+        TileText.GetComponent<Text>().text = TileStyleHolder.Instance.TileStyles[style_index].number.ToString();
+        TileText.GetComponent<Text>().color = TileStyleHolder.Instance.TileStyles[style_index].TextColor;
     }
 
-    public void ApplyStyle (int num)
+    public void ApplyStyle (int tile_value, Vector2 tile_size_delta)
     {
-        switch (num)
+        int style_index = 0;
+        switch (tile_value)
         {
-            case 2:
-                ApplyStyleFromHolder(0);
-                break;
             case 4:
-                ApplyStyleFromHolder(1);
+                style_index = 1;
                 break;
             case 8:
-                ApplyStyleFromHolder(2);
+                style_index = 2;
                 break;
             case 16:
-                ApplyStyleFromHolder(3);
+                style_index = 3;
                 break;
             case 32:
-                ApplyStyleFromHolder(4);
+                style_index = 4;
                 break;
             case 64:
-                ApplyStyleFromHolder(5);
+                style_index = 5;
                 break;
             case 128:
-                ApplyStyleFromHolder(6);
+                style_index = 6;
                 break;
             case 256:
-                ApplyStyleFromHolder(7);
+                style_index = 7;
                 break;
             case 512:
-                ApplyStyleFromHolder(8);
+                style_index = 8;
                 break;
             case 1024:
-                ApplyStyleFromHolder(9);
+                style_index = 9;
                 break;
             case 2048:
-                ApplyStyleFromHolder(10);
+                style_index = 10;
                 break;
         }
+        ApplyStyleFromHolder(style_index, tile_size_delta);
     }
 
 	// Use this for initialization
