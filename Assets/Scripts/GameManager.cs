@@ -15,6 +15,6 @@ public class GameManager : MonoBehaviour {
 
     public void Move (MoveDirection md)
     {
-        Debug.Log(md.ToString() + " move.");
+        GameObject.Find("TileBoard").GetComponent<TileBoard>().MoveTiles(md);
     }
 }

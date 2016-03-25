@@ -41,12 +41,107 @@ public class TileBoard : MonoBehaviour {
             empty_slots_indexes.RemoveAt(random_tile_index);
 
             tiles_array[row_num, col_num] = (GameObject)Instantiate(Resources.Load("Prefabs/Tile"));
-            tiles_array[row_num, col_num].name = "Tile" + row_num.ToString() + col_num.ToString();
+            tiles_array[row_num, col_num].name = "Tile";
             tiles_array[row_num, col_num].transform.SetParent(transform.parent.Find("TilesContainer"));
+            tiles_array[row_num, col_num].GetComponent<Tile>().Value = start_tile_value;
             Vector2 slot_size_delta = slots_array[row_num, col_num].transform.GetComponent<RectTransform>().sizeDelta;
-            tiles_array[row_num, col_num].GetComponent<Tile>().ApplyStyle(start_tile_value, slot_size_delta);
+            tiles_array[row_num, col_num].GetComponent<Tile>().ApplySize(slot_size_delta);
             tiles_array[row_num, col_num].transform.position = slots_array[row_num, col_num].transform.position;
         }
+    }
+
+    public void MoveTiles (MoveDirection md)
+    {
+        Debug.Log(md.ToString() + " move for tiles");
+        //init move parameters
+        int row_shift = 1;
+        int col_shift = 1;
+        bool is_bypass_tile_order_straight = true;
+        switch (md)
+        {
+            case MoveDirection.Right:
+                row_shift = 0;
+                col_shift = 1;
+                is_bypass_tile_order_straight = false;
+                break;
+            case MoveDirection.Left:
+                row_shift = 0;
+                col_shift = -1;
+                is_bypass_tile_order_straight = true;
+                break;
+            case MoveDirection.Up:
+                row_shift = -1;
+                col_shift = 0;
+                is_bypass_tile_order_straight = true;
+                break;
+            case MoveDirection.Down:
+                row_shift = 1;
+                col_shift = 0;
+                is_bypass_tile_order_straight = false;
+                break;
+
+        }
+
+        bool is_move_possible = true;
+        while (is_move_possible)
+        {
+            int possible_moves = 0;
+            for (int i = 0; i < board_size; i++)
+            {
+                if (is_bypass_tile_order_straight)
+                {
+                    for (int j = 1; j < board_size-1; j++)
+                    {
+                        if (MoveSpecificTile(i, j, row_shift, col_shift))
+                        {
+                            possible_moves++;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int j = board_size - 2; j >= 0; j--)
+                    {
+                        if (MoveSpecificTile(i, j, row_shift, col_shift))
+                        {
+                            possible_moves++;
+                        }
+                    }
+                }
+            }
+
+            if (possible_moves == 0)
+            {
+                is_move_possible = false;
+            }
+        }
+        Debug.Log("vyxod");
+    }
+
+    bool MoveSpecificTile (int row_index, int col_index, int row_shift, int col_shift)
+    {
+        if (tiles_array[row_index, col_index])
+        {
+            Debug.Log("tile not empty " + row_index.ToString() + col_index.ToString());
+            if (!tiles_array[row_index + row_shift, col_index + col_shift])
+            {
+                tiles_array[row_index + row_shift, col_index + col_shift] = tiles_array[row_index, col_index];
+                tiles_array[row_index + row_shift, col_index + col_shift].transform.position = slots_array[row_index + row_shift, col_index + col_shift].transform.position;
+                tiles_array[row_index, col_index] = null;
+
+                //if (col_index + 2 < board_size && !tiles_array[row_index + row_shift, col_index + 2])
+                //{
+                //    return true;
+                //}
+            }
+            else if (tiles_array[row_index, col_index].GetComponent<Tile>().Value == tiles_array[row_index + row_shift, col_index + col_shift].GetComponent<Tile>().Value)
+            {
+                tiles_array[row_index + row_shift, col_index + col_shift].GetComponent<Tile>().Value = tiles_array[row_index + row_shift, col_index + col_shift].GetComponent<Tile>().Value * 2;
+                Destroy(tiles_array[row_index, col_index].gameObject);
+                tiles_array[row_index, col_index] = null;
+            }
+        }
+        return false;
     }
 
 	// Use this for initialization
@@ -58,7 +153,7 @@ public class TileBoard : MonoBehaviour {
 	
     void Test ()
     {
-        CreateRandomTiles(2);
+        CreateRandomTiles(6);
     }
 
 	// Update is called once per frame
