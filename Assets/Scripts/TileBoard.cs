@@ -67,6 +67,7 @@ public class TileBoard : MonoBehaviour {
         {
             int random_slot_index = Random.Range(0, all_empty_slots_indexes.Count);
             random_empty_slots_indexes.Add(all_empty_slots_indexes[random_slot_index]);
+            all_empty_slots_indexes.RemoveAt(random_slot_index);
         }
 
         return random_empty_slots_indexes;

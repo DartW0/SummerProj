@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
 
 public class Tile : MonoBehaviour {
@@ -29,6 +28,15 @@ public class Tile : MonoBehaviour {
     {
         int style_index = (int)Mathf.Log(tile_value, 2) - 1;
         ApplyStyleFromHolder(style_index);
+        if (style_index == 0)
+        {
+            transform.GetComponent<Animator>().SetTrigger("TileAppear");
+        }
+        else
+        {
+            GameObject.FindObjectOfType<GameManager>().AddValueToScore(tile_value);
+            transform.GetComponent<Animator>().SetTrigger("TileMerge");
+        }
     }
 
     void ApplyStyleFromHolder(int style_index)
