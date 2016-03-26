@@ -7,7 +7,6 @@ public class TileBoard : MonoBehaviour {
 
     GameObject[,] slots_array;
     GameObject[,] tiles_array;
-    List<Vector2> empty_slots_indexes = new List<Vector2>();
     int start_tile_value = 2;
     
     void InitBoardTiles ()
@@ -21,25 +20,17 @@ public class TileBoard : MonoBehaviour {
                 slots_array[i, j] = (GameObject)Instantiate(Resources.Load("Prefabs/Slot"));
                 slots_array[i, j].name = "Slot" + i.ToString() + j.ToString();
                 slots_array[i, j].transform.SetParent(transform);
-                empty_slots_indexes.Add(new Vector2(i,j));
             }
         }
     }
 
     void CreateRandomTiles (int _tiles_quantity)
     {
-        int tiles_quantity = _tiles_quantity;
-        if (tiles_quantity > empty_slots_indexes.Count)
+        List<Vector2> empty_slots_indexes = GetEmptySlotsIndexes(_tiles_quantity);
+        for (int i = 0; i < empty_slots_indexes.Count; i++)
         {
-            tiles_quantity = empty_slots_indexes.Count;
-        }
-        for (int i = 0; i < tiles_quantity; i++)
-        {
-            int random_tile_index = Random.Range(0, empty_slots_indexes.Count);
-            int row_num = (int)empty_slots_indexes[random_tile_index].x;
-            int col_num = (int)empty_slots_indexes[random_tile_index].y;
-            empty_slots_indexes.RemoveAt(random_tile_index);
-
+            int row_num = (int)empty_slots_indexes[i].x;
+            int col_num = (int)empty_slots_indexes[i].y;
             tiles_array[row_num, col_num] = (GameObject)Instantiate(Resources.Load("Prefabs/Tile"));
             tiles_array[row_num, col_num].name = "Tile";
             tiles_array[row_num, col_num].transform.SetParent(transform.parent.Find("TilesContainer"));
@@ -48,6 +39,37 @@ public class TileBoard : MonoBehaviour {
             tiles_array[row_num, col_num].GetComponent<Tile>().ApplySize(slot_size_delta);
             tiles_array[row_num, col_num].transform.position = slots_array[row_num, col_num].transform.position;
         }
+    }
+
+    List<Vector2> GetEmptySlotsIndexes (int _slots_quantity)
+    {
+        List<Vector2> all_empty_slots_indexes = new List<Vector2>();
+
+        for (int i = 0; i < board_size; i++)
+        {
+            for (int j = 0; j < board_size; j++)
+            {
+                if (!tiles_array[i, j])
+                {
+                    all_empty_slots_indexes.Add(new Vector2(i, j));
+                }
+            }
+        }
+
+        int slots_quantity = _slots_quantity;
+        if (slots_quantity > all_empty_slots_indexes.Count)
+        {
+            slots_quantity = all_empty_slots_indexes.Count;
+        }
+
+        List<Vector2> random_empty_slots_indexes = new List<Vector2>();
+        for (int i = 0; i < slots_quantity; i++)
+        {
+            int random_slot_index = Random.Range(0, all_empty_slots_indexes.Count);
+            random_empty_slots_indexes.Add(all_empty_slots_indexes[random_slot_index]);
+        }
+
+        return random_empty_slots_indexes;
     }
 
     public void MoveTiles (MoveDirection md)
@@ -90,7 +112,7 @@ public class TileBoard : MonoBehaviour {
             {
                 if (is_bypass_tile_order_straight)
                 {
-                    for (int j = 1; j < board_size-1; j++)
+                    for (int j = 0; j < board_size; j++)
                     {
                         if (MoveSpecificTile(i, j, row_shift, col_shift))
                         {
@@ -100,7 +122,7 @@ public class TileBoard : MonoBehaviour {
                 }
                 else
                 {
-                    for (int j = board_size - 2; j >= 0; j--)
+                    for (int j = board_size - 1; j >= 0; j--)
                     {
                         if (MoveSpecificTile(i, j, row_shift, col_shift))
                         {
@@ -116,11 +138,15 @@ public class TileBoard : MonoBehaviour {
             }
         }
         Debug.Log("vyxod");
+
+
+
+        CreateRandomTiles(2);
     }
 
     bool MoveSpecificTile (int row_index, int col_index, int row_shift, int col_shift)
     {
-        if (tiles_array[row_index, col_index])
+        if (tiles_array[row_index, col_index] && IsTileIndexExists(row_index + row_shift, col_index + col_shift))
         {
             Debug.Log("tile not empty " + row_index.ToString() + col_index.ToString());
             if (!tiles_array[row_index + row_shift, col_index + col_shift])
@@ -129,10 +155,10 @@ public class TileBoard : MonoBehaviour {
                 tiles_array[row_index + row_shift, col_index + col_shift].transform.position = slots_array[row_index + row_shift, col_index + col_shift].transform.position;
                 tiles_array[row_index, col_index] = null;
 
-                //if (col_index + 2 < board_size && !tiles_array[row_index + row_shift, col_index + 2])
-                //{
-                //    return true;
-                //}
+                if (IsTileIndexExists(row_index + row_shift*2, col_index + col_shift*2) && !tiles_array[row_index + row_shift * 2, col_index + col_shift * 2])
+                {
+                    return true;
+                }
             }
             else if (tiles_array[row_index, col_index].GetComponent<Tile>().Value == tiles_array[row_index + row_shift, col_index + col_shift].GetComponent<Tile>().Value)
             {
@@ -140,6 +166,15 @@ public class TileBoard : MonoBehaviour {
                 Destroy(tiles_array[row_index, col_index].gameObject);
                 tiles_array[row_index, col_index] = null;
             }
+        }
+        return false;
+    }
+
+    bool IsTileIndexExists(int row_num, int col_num)
+    {
+        if (row_num >= 0 && row_num < board_size && col_num >= 0 && col_num < board_size)
+        {
+            return true;
         }
         return false;
     }
@@ -153,7 +188,7 @@ public class TileBoard : MonoBehaviour {
 	
     void Test ()
     {
-        CreateRandomTiles(6);
+        CreateRandomTiles(2);
     }
 
 	// Update is called once per frame
