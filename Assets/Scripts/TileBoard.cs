@@ -4,11 +4,23 @@ using System.Collections.Generic;
 public class TileBoard : MonoBehaviour {
 
     public int board_size = 2;
+    public int new_round_tiles_quantity = 2;
 
     GameObject[,] slots_array;
     GameObject[,] tiles_array;
     int start_tile_value = 2;
-    
+
+    void Start()
+    {
+        InitBoardTiles();
+        Invoke("CreateStartTiles", 0.1f);
+    }
+
+    public void CreateStartTiles ()
+    {
+        CreateRandomTiles(new_round_tiles_quantity);
+    }
+
     void InitBoardTiles ()
     {
         slots_array = new GameObject[board_size, board_size];
@@ -75,7 +87,6 @@ public class TileBoard : MonoBehaviour {
 
     public void MoveTiles (MoveDirection md)
     {
-        Debug.Log(md.ToString() + " move for tiles");
         //init move parameters
         int row_shift = 1;
         int col_shift = 1;
@@ -138,18 +149,14 @@ public class TileBoard : MonoBehaviour {
                 is_move_possible = false;
             }
         }
-        Debug.Log("vyxod");
 
-
-
-        CreateRandomTiles(2);
+        CreateRandomTiles(new_round_tiles_quantity);
     }
 
     bool MoveSpecificTile (int row_index, int col_index, int row_shift, int col_shift)
     {
         if (tiles_array[row_index, col_index] && IsTileIndexExists(row_index + row_shift, col_index + col_shift))
         {
-            Debug.Log("tile not empty " + row_index.ToString() + col_index.ToString());
             if (!tiles_array[row_index + row_shift, col_index + col_shift])
             {
                 tiles_array[row_index + row_shift, col_index + col_shift] = tiles_array[row_index, col_index];
@@ -180,20 +187,18 @@ public class TileBoard : MonoBehaviour {
         return false;
     }
 
-	// Use this for initialization
-	void Start () {
-        InitBoardTiles();
-        //CreateRandomTiles(2);
-        Invoke("Test", 0.1f);
-    }
-	
-    void Test ()
+    public void ClearBoard ()
     {
-        CreateRandomTiles(2);
-    }
-
-	// Update is called once per frame
-	void Update () {
-
+        for (int i = 0; i < board_size; i++)
+        {
+            for (int j = 0; j < board_size; j++)
+            {
+                if (tiles_array[i, j])
+                {
+                    Destroy(tiles_array[i, j].gameObject);
+                    tiles_array[i, j] = null;
+                }
+            }
+        }
     }
 }
